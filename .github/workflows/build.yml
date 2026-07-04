@@ -27,12 +27,7 @@ jobs:
 
       - name: Build EXE
         run: |
-          python -m PyInstaller ^
-          --clean ^
-          --noconfirm ^
-          --windowed ^
-          --name "STANK Archive Pro" ^
-          main.py
+          python -m PyInstaller --clean --noconfirm --windowed --name "STANK Archive Pro" main.py
 
       - name: Zip Release
         shell: powershell

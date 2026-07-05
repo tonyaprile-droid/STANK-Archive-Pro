@@ -1,0 +1,30 @@
+STANK Archive Pro - Release Instructions
+
+WHAT CHANGED IN THIS VERSION
+- Removed File Properties from the right-click menu.
+- Right-click menu now shows only:
+  - Archive This File / Archive Selected Files
+  - Open File...
+  - Copy Filename
+  - Show in Explorer
+- Archive behavior creates renamed copies in the Archived folder and leaves original files in place.
+- If the source folder does not have an Archived folder, the app asks before creating it.
+
+HOW TO BUILD A SENDABLE ZIP ON YOUR PC
+1. Open this folder on your Windows computer.
+2. Double-click build_release.bat.
+3. Wait for the build to finish.
+4. Send this file to users:
+   release\STANK_Archive_Pro_v1.0.0_Portable.zip
+
+WHAT USERS DO
+1. Download the ZIP.
+2. Right-click it and choose Extract All.
+3. Open the extracted folder.
+4. Double-click STANK Archive Pro.exe.
+
+GITHUB ACTIONS
+This project also includes:
+.github\workflows\build.yml
+
+After pushing to GitHub, go to the Actions tab and download the build artifact.

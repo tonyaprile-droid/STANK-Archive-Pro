@@ -2,8 +2,6 @@ name: Build and Release STANK Archive Pro
 
 on:
   push:
-    branches:
-      - main
     tags:
       - "v*"
   workflow_dispatch:
@@ -16,11 +14,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
@@ -39,19 +35,8 @@ jobs:
         run: |
           Compress-Archive -Path "dist\STANK Archive Pro\*" -DestinationPath "STANK_Archive_Pro_Portable.zip"
 
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: STANK_Archive_Pro_Portable
-          path: STANK_Archive_Pro_Portable.zip
-
-      - name: Publish GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Publish Release
         uses: softprops/action-gh-release@v2
         with:
           files: STANK_Archive_Pro_Portable.zip
-          name: STANK Archive Pro ${{ github.ref_name }}
-          body: |
-            STANK Archive Pro release.
-
-            Download the portable ZIP, extract it, and run STANK Archive Pro.exe.
+          generate_release_notes: true

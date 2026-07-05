@@ -1,15 +1,10 @@
 import os
 import sys
-<<<<<<< HEAD
 import json
 import shutil
 import subprocess
 import urllib.error
 import urllib.request
-=======
-import shutil
-import subprocess
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -27,7 +22,6 @@ from PySide6.QtWidgets import (
     QApplication, QFileDialog, QFrame, QHBoxLayout, QLabel, QLineEdit,
     QMainWindow, QMessageBox, QPushButton, QSplitter, QTextEdit,
     QVBoxLayout, QWidget, QAbstractItemView, QHeaderView, QDialog,
-<<<<<<< HEAD
     QScrollArea, QTableView, QMenu
 )
 
@@ -37,12 +31,6 @@ GITHUB_OWNER = "tonyaprile-droid"
 GITHUB_REPO = "STANK-Archive-Pro"
 GITHUB_RELEASES_URL = f"https://github.com/{GITHUB_OWNER}/{GITHUB_REPO}/releases"
 GITHUB_API_LATEST = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/releases/latest"
-=======
-    QScrollArea, QTableView
-)
-
-APP_NAME = "STANK Archive Pro"
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
 SUPPORTED_TEXT = {".txt", ".csv", ".log", ".json", ".xml", ".md", ".py", ".ini"}
 SUPPORTED_IMAGE = {".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp"}
 SUPPORTED_DOC = {".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx"}
@@ -53,7 +41,6 @@ def resource_path(relative_path: str) -> Path:
     return base / relative_path
 
 
-<<<<<<< HEAD
 def normalize_version(version: str) -> tuple[int, ...]:
     cleaned = version.strip().lower().lstrip("v")
     parts: list[int] = []
@@ -78,8 +65,6 @@ def is_newer_version(latest: str, current: str) -> bool:
     return tuple(left) > tuple(right)
 
 
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
 @dataclass
 class ArchiveAction:
     original_path: Path
@@ -401,7 +386,6 @@ class FolderScanTask(QRunnable):
         self.signals.finished.emit(self.token, records, error)
 
 
-<<<<<<< HEAD
 class UpdateCheckSignals(QObject):
     finished = Signal(bool, str, str, str, str)
 
@@ -438,8 +422,6 @@ class UpdateCheckTask(QRunnable):
             self.signals.finished.emit(False, "", "", GITHUB_RELEASES_URL, str(exc))
 
 
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
 class DropFrame(QFrame):
     def __init__(self, parent):
         super().__init__(parent)
@@ -523,18 +505,11 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.settings = QSettings("TonyApps", "StankArchivePro")
-<<<<<<< HEAD
         # Start with no source selected. Users must choose a source folder each session,
         # so the app never silently scans or prompts before the main window is visible.
         self.scan_folder: Path | None = None
         self.archive_folder: Path | None = None
         self.archive_folder_custom = False
-=======
-        saved_scan_folder = self.settings.value("scan_folder", "")
-        self.scan_folder = Path(saved_scan_folder) if saved_scan_folder else Path.home()
-        self.archive_folder = Path(self.settings.value("archive_folder", str(self.scan_folder / "Archived")))
-        self.archive_folder_custom = self.settings.value("archive_folder_custom", "false") == "true"
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
         self.dark_mode = self.settings.value("dark_mode", "false") == "true"
         self.history_log = Path(self.settings.value("history_log", str(Path.home() / "StankArchivePro_history.log")))
         self.last_actions: list[ArchiveAction] = []
@@ -549,10 +524,7 @@ class MainWindow(QMainWindow):
         self._cached_header_logo = None
         self._cached_about_logo = None
         self._about_dialog = None
-<<<<<<< HEAD
         self.update_check_in_progress = False
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
 
         self.watcher = QFileSystemWatcher(self)
         self.refresh_timer = QTimer(self)
@@ -574,20 +546,7 @@ class MainWindow(QMainWindow):
         self.build_actions()
         self.apply_theme()
         QTimer.singleShot(0, self.preload_about_dialog)
-<<<<<<< HEAD
         self.show_no_source_selected()
-=======
-
-        if not saved_scan_folder or not Path(saved_scan_folder).exists():
-            dialog = FolderSetupDialog(self)
-            dialog.setStyleSheet(self.styleSheet())
-            if dialog.exec() and dialog.selected_folder:
-                self.set_scan_folder(dialog.selected_folder, initial=True)
-            else:
-                QTimer.singleShot(0, self.choose_folder)
-        else:
-            self.set_scan_folder(self.scan_folder, initial=True)
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
 
     def build_ui(self):
         root = DropFrame(self)
@@ -716,13 +675,9 @@ class MainWindow(QMainWindow):
         self.table.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.setSortingEnabled(True)
-<<<<<<< HEAD
         self.table.doubleClicked.connect(self.confirm_open_from_index)
         self.table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.table.customContextMenuRequested.connect(self.show_file_context_menu)
-=======
-        self.table.doubleClicked.connect(self.toggle_check_from_index)
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
         self.table.selectionModel().selectionChanged.connect(lambda *_: self.update_filename_preview())
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
@@ -739,10 +694,7 @@ class MainWindow(QMainWindow):
         self.table.setColumnWidth(3, 90)
         self.table.setColumnWidth(4, 90)
         self.table.setWordWrap(False)
-<<<<<<< HEAD
         self.table.setToolTip("Double-click a file to open it after confirmation. Right-click a file for quick actions including Archive.")
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
         self.table.verticalHeader().setDefaultSectionSize(36)
         self.proxy.sort(2, Qt.DescendingOrder)
         self.model.dataChanged.connect(lambda *_: self.after_model_check_changed())
@@ -903,7 +855,6 @@ class MainWindow(QMainWindow):
         self.settings.setValue("dark_mode", "true" if self.dark_mode else "false")
         self.apply_theme()
 
-<<<<<<< HEAD
     def show_no_source_selected(self):
         self.scan_folder = None
         self.archive_folder = None
@@ -922,15 +873,10 @@ class MainWindow(QMainWindow):
     def choose_folder(self):
         start_folder = str(self.scan_folder) if self.scan_folder else str(Path.home())
         folder = QFileDialog.getExistingDirectory(self, "Choose folder to scan", start_folder)
-=======
-    def choose_folder(self):
-        folder = QFileDialog.getExistingDirectory(self, "Choose folder to scan", str(self.scan_folder))
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
         if folder:
             self.set_scan_folder(Path(folder))
 
     def choose_archive_folder(self):
-<<<<<<< HEAD
         start_folder = str(self.archive_folder) if self.archive_folder else (str(self.scan_folder / "Archived") if self.scan_folder else str(Path.home()))
         folder = QFileDialog.getExistingDirectory(self, "Choose archive folder", start_folder)
         if folder:
@@ -938,18 +884,12 @@ class MainWindow(QMainWindow):
             if not self.ensure_archive_folder_exists(chosen):
                 return
             self.archive_folder = chosen
-=======
-        folder = QFileDialog.getExistingDirectory(self, "Choose archive folder", str(self.archive_folder))
-        if folder:
-            self.archive_folder = Path(folder)
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
             self.archive_folder_custom = True
             self.settings.setValue("archive_folder_custom", "true")
             self.settings.setValue("archive_folder", str(self.archive_folder))
             self.archive_path_label.setText(str(self.archive_folder))
             self.update_filename_preview()
 
-<<<<<<< HEAD
     def ensure_archive_folder_exists(self, folder: Path | None, ask: bool = True) -> bool:
         if folder is None:
             return False
@@ -1004,16 +944,6 @@ class MainWindow(QMainWindow):
 
         self.settings.setValue("scan_folder", str(folder))
         self.source_path_label.setText(str(folder))
-=======
-    def set_scan_folder(self, folder: Path, initial=False):
-        self.scan_folder = folder
-        if not self.archive_folder_custom:
-            self.archive_folder = folder / "Archived"
-            self.settings.setValue("archive_folder", str(self.archive_folder))
-        self.settings.setValue("scan_folder", str(folder))
-        self.source_path_label.setText(str(folder))
-        self.archive_path_label.setText(str(self.archive_folder))
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
         watched = self.watcher.directories()
         if watched:
             self.watcher.removePaths(watched)
@@ -1022,7 +952,6 @@ class MainWindow(QMainWindow):
         self.refresh_files()
 
     def refresh_files(self):
-<<<<<<< HEAD
         if self.scan_folder is None:
             self.all_files = []
             self.model.set_records([])
@@ -1030,8 +959,6 @@ class MainWindow(QMainWindow):
             self.update_dashboard()
             self.update_filename_preview()
             return
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
         if not self.scan_folder.exists():
             self.all_files = []
             self.model.set_records([])
@@ -1078,7 +1005,6 @@ class MainWindow(QMainWindow):
                 paths.append(p)
         return paths
 
-<<<<<<< HEAD
     def path_from_proxy_index(self, proxy_index) -> Path | None:
         if not proxy_index.isValid():
             return None
@@ -1105,8 +1031,6 @@ class MainWindow(QMainWindow):
             return selected_paths
         return [clicked_path] if clicked_path else []
 
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
     def selected_paths(self) -> list[Path]:
         return self.model.checked_existing_paths()
 
@@ -1142,7 +1066,6 @@ class MainWindow(QMainWindow):
         if idx.isValid():
             self.toggle_check_from_index(idx)
 
-<<<<<<< HEAD
     def confirm_open_from_index(self, proxy_index):
         path = self.path_from_proxy_index(proxy_index)
         if path:
@@ -1218,8 +1141,6 @@ class MainWindow(QMainWindow):
         except Exception as exc:
             QMessageBox.critical(self, "Properties failed", str(exc))
 
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
     def after_model_check_changed(self):
         count = len(self.selected_paths())
         self.archive_button.setText(f"Archive {count} File{'s' if count != 1 else ''}" if count else "Archive Selected")
@@ -1260,11 +1181,8 @@ class MainWindow(QMainWindow):
         return f"{path.stem} (Archived {stamp}){path.suffix}"
 
     def unique_destination(self, path: Path) -> Path:
-<<<<<<< HEAD
         if self.archive_folder is None:
             raise RuntimeError("No archive folder selected.")
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
         base = self.archive_folder / self.archive_name(path)
         if not base.exists():
             return base
@@ -1278,11 +1196,8 @@ class MainWindow(QMainWindow):
             counter += 1
 
     def archived_filename_for_preview(self, path: Path) -> str:
-<<<<<<< HEAD
         if self.archive_folder is None:
             return self.archive_name(path)
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
         return self.unique_destination(path).name
 
     def archive_selected(self):
@@ -1290,7 +1205,6 @@ class MainWindow(QMainWindow):
         if not paths:
             self.status_label.setText("Select one or more files first.")
             return
-<<<<<<< HEAD
         self.archive_paths(paths)
 
     def archive_paths(self, paths: list[Path]):
@@ -1314,23 +1228,6 @@ class MainWindow(QMainWindow):
                 self.filename_preview.setPlainText(f"Archiving...\n\n📄 {dest.name}\n\n{index} / {total}")
                 QApplication.processEvents()
                 shutil.copy2(str(path), str(dest))
-=======
-        try:
-            self.archive_folder.mkdir(parents=True, exist_ok=True)
-            actions = []
-            total = len(paths)
-            for index, path in enumerate(paths, start=1):
-                if not path.exists():
-                    continue
-                dest = self.unique_destination(path)
-                self.filename_preview.setHtml(
-                    f"<div style='font-size:15px; font-weight:850; color:{self._preview_text};'>Archiving...</div>"
-                    f"<div style='font-size:14px; font-weight:800; margin-top:8px;'>📄 {dest.name}</div>"
-                    f"<div style='margin-top:8px;'>{index} / {total}</div>"
-                )
-                QApplication.processEvents()
-                shutil.move(str(path), str(dest))
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
                 actions.append(ArchiveAction(path, dest))
                 self.write_history(path, dest)
             self.last_actions = actions
@@ -1341,7 +1238,6 @@ class MainWindow(QMainWindow):
 
     def show_success_banner(self, count: int):
         if count <= 0:
-<<<<<<< HEAD
             self.status_label.setText("No archived copies were created.")
             return
         word = "file" if count == 1 else "files"
@@ -1353,19 +1249,6 @@ class MainWindow(QMainWindow):
             return
         word = "file" if count == 1 else "files"
         self.show_dashboard_message(f"↶ Undo complete. Removed {count} archived {word}.", "Original files were not changed.")
-=======
-            self.status_label.setText("No files were archived.")
-            return
-        word = "file" if count == 1 else "files"
-        self.show_dashboard_message(f"✓ Successfully archived {count} {word}.", "Files were moved to the archive folder and removed from the source folder.")
-
-    def show_undo_banner(self, count: int):
-        if count <= 0:
-            self.status_label.setText("No files were restored.")
-            return
-        word = "file" if count == 1 else "files"
-        self.show_dashboard_message(f"↶ Undo complete. Restored {count} {word}.", "Files were moved back to the source folder.")
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
 
     def show_dashboard_message(self, headline: str, detail: str):
         self.status_label.setText(headline)
@@ -1383,13 +1266,7 @@ class MainWindow(QMainWindow):
                 original, archived = action.original_path, action.archived_path
                 if not archived.exists():
                     continue
-<<<<<<< HEAD
                 archived.unlink()
-=======
-                if original.exists():
-                    original = original.with_name(f"{original.stem}_restored_{datetime.now().strftime('%H-%M')}{original.suffix}")
-                shutil.move(str(archived), str(original))
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
                 restored += 1
             self.show_undo_banner(restored)
             self.last_actions = []
@@ -1399,15 +1276,11 @@ class MainWindow(QMainWindow):
 
     def open_archive_folder(self):
         try:
-<<<<<<< HEAD
             if self.archive_folder is None:
                 self.status_label.setText("No archive folder selected.")
                 return
             if not self.ensure_archive_folder_exists(self.archive_folder):
                 return
-=======
-            self.archive_folder.mkdir(parents=True, exist_ok=True)
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
             self.open_path(self.archive_folder)
         except Exception as exc:
             QMessageBox.critical(self, "Open archive folder failed", str(exc))
@@ -1475,19 +1348,11 @@ class MainWindow(QMainWindow):
         content_layout.setContentsMargins(0, 0, 8, 0)
         content_layout.setSpacing(10)
         for widget in [
-<<<<<<< HEAD
             self.about_label(f"Version {CURRENT_VERSION}", "AboutBody"),
             self.about_label("Welcome", "AboutSectionTitle"),
             self.about_label("STANK Archive Pro was created to make document archiving fast, simple, and reliable. Whether you're organizing scanned paperwork, invoices, insurance documents, or other digital files, STANK helps keep your workspace clean by creating renamed archive copies while leaving the original files in place.<br><br>Version 1.0.0 creates renamed archive copies, keeps originals in place, and includes update checking through GitHub Releases.", "AboutBody"),
             self.about_label("What STANK Means", "AboutSectionTitle"),
             self.about_label("<b>S</b> — <b>Secure</b><br>Protect your documents with reliable organization and safe archiving.<br><br><b>T</b> — <b>Tracking</b><br>Keep files organized with consistent archive naming and structure.<br><br><b>A</b> — <b>Archiving</b><br>Quickly create timestamped archive copies in your chosen archive location.<br><br><b>N</b> — <b>Naming</b><br>Automatically rename every archived file using a standardized format.<br><br><b>K</b> — <b>Kit</b><br>Everything you need for fast, professional document archiving.", "AboutBody"),
-=======
-            self.about_label("Version 3.1", "AboutBody"),
-            self.about_label("Welcome", "AboutSectionTitle"),
-            self.about_label("STANK Archive Pro was created to make document archiving fast, simple, and reliable. Whether you're organizing scanned paperwork, invoices, insurance documents, or other digital files, STANK helps keep your workspace clean by automatically renaming and moving files into a structured archive.<br><br>Version 3.1 uses a faster file-list engine, smoother resize handling, and preloaded dialogs for a more responsive experience.", "AboutBody"),
-            self.about_label("What STANK Means", "AboutSectionTitle"),
-            self.about_label("<b>S</b> — <b>Secure</b><br>Protect your documents with reliable organization and safe archiving.<br><br><b>T</b> — <b>Tracking</b><br>Keep files organized with consistent archive naming and structure.<br><br><b>A</b> — <b>Archiving</b><br>Quickly move documents into their permanent archive location.<br><br><b>N</b> — <b>Naming</b><br>Automatically rename every archived file using a standardized format.<br><br><b>K</b> — <b>Kit</b><br>Everything you need for fast, professional document archiving.", "AboutBody"),
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
             self.about_label("Features", "AboutSectionTitle"),
             self.about_label("• Archive one or many files at once<br>• Fast model-based file list<br>• Automatic archive renaming<br>• Consistent Windows-friendly filenames<br>• Batch processing<br>• Fast file searching and sorting<br>• Light and dark modes<br>• Optimized for everyday document management", "AboutBody"),
         ]:
@@ -1496,7 +1361,6 @@ class MainWindow(QMainWindow):
         scroll.setWidget(content)
         outer.addWidget(scroll, 1)
 
-<<<<<<< HEAD
         button_row = QHBoxLayout()
         self.about_update_button = QPushButton("Check for Updates")
         self.about_update_button.setObjectName("SecondaryButton")
@@ -1508,12 +1372,6 @@ class MainWindow(QMainWindow):
         button_row.addStretch(1)
         button_row.addWidget(close_button, 0, Qt.AlignRight)
         outer.addLayout(button_row)
-=======
-        close_button = QPushButton("Close")
-        close_button.setObjectName("PrimaryButton")
-        close_button.clicked.connect(dialog.accept)
-        outer.addWidget(close_button, 0, Qt.AlignRight)
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
         return dialog
 
     def show_about_dialog(self):
@@ -1536,11 +1394,8 @@ class MainWindow(QMainWindow):
             QLabel#AboutBody { font-size: 13px; line-height: 1.35; color: #d3deec; background: transparent; }
             QPushButton#PrimaryButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 #35c978, stop:1 #158d45); color: white; border: 1px solid #0e7438; border-radius: 13px; padding: 8px 18px; font-family: "Segoe UI Semibold"; font-weight: 950; font-size: 14px; min-width: 120px; }
             QPushButton#PrimaryButton:hover { background: #24a85a; }
-<<<<<<< HEAD
             QPushButton#SecondaryButton { background: #26364f; color: #eef6ff; border: 1px solid #405772; border-radius: 13px; padding: 8px 18px; font-family: "Segoe UI Semibold"; font-weight: 900; font-size: 14px; min-width: 150px; }
             QPushButton#SecondaryButton:hover { background: #314764; }
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
             QScrollBar:vertical { background: #172033; width: 13px; border-radius: 6px; }
             QScrollBar::handle:vertical { background: #53677e; border-radius: 6px; min-height: 40px; }
             """
@@ -1554,16 +1409,12 @@ class MainWindow(QMainWindow):
             QLabel#AboutBody { font-size: 13px; line-height: 1.35; color: #203247; background: transparent; }
             QPushButton#PrimaryButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 #35c978, stop:1 #158d45); color: white; border: 1px solid #0e7438; border-radius: 13px; padding: 8px 18px; font-family: "Segoe UI Semibold"; font-weight: 950; font-size: 14px; min-width: 120px; }
             QPushButton#PrimaryButton:hover { background: #24a85a; }
-<<<<<<< HEAD
             QPushButton#SecondaryButton { background: #eaf2fb; color: #0f1f33; border: 1px solid #bed0e4; border-radius: 13px; padding: 8px 18px; font-family: "Segoe UI Semibold"; font-weight: 900; font-size: 14px; min-width: 150px; }
             QPushButton#SecondaryButton:hover { background: #dceafe; }
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
             QScrollBar:vertical { background: #edf3f8; width: 13px; border-radius: 6px; }
             QScrollBar::handle:vertical { background: #b7c8d8; border-radius: 6px; min-height: 40px; }
             """
 
-<<<<<<< HEAD
     def check_for_updates(self):
         if self.update_check_in_progress:
             return
@@ -1619,8 +1470,6 @@ class MainWindow(QMainWindow):
                 f"You are running the latest version.\n\nCurrent version: v{CURRENT_VERSION}\nLatest GitHub release: {latest_display}",
             )
 
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
     def about_label(self, text: str, object_name: str) -> QLabel:
         label = QLabel(text)
         label.setWordWrap(True)

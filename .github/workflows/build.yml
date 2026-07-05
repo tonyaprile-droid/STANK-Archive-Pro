@@ -1,21 +1,18 @@
-name: Build STANK Archive Pro
+name: Build and Release STANK Archive Pro
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+    tags:
+      - "v*"
   workflow_dispatch:
-<<<<<<< HEAD
-  release:
-    types: [published]
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
 
 permissions:
   contents: write
 
 jobs:
-<<<<<<< HEAD
-  build-windows:
+  build:
     runs-on: windows-latest
 
     steps:
@@ -24,47 +21,12 @@ jobs:
 
       - name: Set up Python
         uses: actions/setup-python@v5
-=======
-  build:
-    runs-on: windows-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
         with:
           python-version: "3.12"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-<<<<<<< HEAD
-          python -m pip install -r requirements.txt
-          python -m pip install pyinstaller pillow
-
-      - name: Build portable app
-        run: |
-          python -m PyInstaller --clean --noconfirm --windowed --name "STANK Archive Pro" --icon "assets\app_icon.ico" --add-data "assets;assets" main.py
-
-      - name: Package portable ZIP
-        shell: powershell
-        run: |
-          New-Item -ItemType Directory -Force -Path release | Out-Null
-          Compress-Archive -Path "dist\STANK Archive Pro\*" -DestinationPath "release\STANK_Archive_Pro_v1.0.0_Portable.zip" -Force
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: STANK-Archive-Pro-v1.0.0-Portable
-          path: release/STANK_Archive_Pro_v1.0.0_Portable.zip
-
-      - name: Attach ZIP to GitHub Release
-        if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
-        with:
-          files: release/STANK_Archive_Pro_v1.0.0_Portable.zip
-=======
           pip install -r requirements.txt
           pip install pyinstaller pillow
 
@@ -72,14 +34,24 @@ jobs:
         run: |
           python -m PyInstaller --clean --noconfirm --windowed --name "STANK Archive Pro" main.py
 
-      - name: Zip Release
+      - name: Create Portable ZIP
         shell: powershell
         run: |
           Compress-Archive -Path "dist\STANK Archive Pro\*" -DestinationPath "STANK_Archive_Pro_Portable.zip"
 
-      - name: Upload Build
+      - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: STANK_Archive_Pro
+          name: STANK_Archive_Pro_Portable
           path: STANK_Archive_Pro_Portable.zip
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: STANK_Archive_Pro_Portable.zip
+          name: STANK Archive Pro ${{ github.ref_name }}
+          body: |
+            STANK Archive Pro release.
+
+            Download the portable ZIP, extract it, and run STANK Archive Pro.exe.

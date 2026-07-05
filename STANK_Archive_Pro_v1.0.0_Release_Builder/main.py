@@ -1,15 +1,7 @@
 import os
 import sys
-<<<<<<< HEAD
-import json
 import shutil
 import subprocess
-import urllib.error
-import urllib.request
-=======
-import shutil
-import subprocess
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -27,22 +19,10 @@ from PySide6.QtWidgets import (
     QApplication, QFileDialog, QFrame, QHBoxLayout, QLabel, QLineEdit,
     QMainWindow, QMessageBox, QPushButton, QSplitter, QTextEdit,
     QVBoxLayout, QWidget, QAbstractItemView, QHeaderView, QDialog,
-<<<<<<< HEAD
-    QScrollArea, QTableView, QMenu
-)
-
-APP_NAME = "STANK Archive Pro"
-CURRENT_VERSION = "1.0.0"
-GITHUB_OWNER = "tonyaprile-droid"
-GITHUB_REPO = "STANK-Archive-Pro"
-GITHUB_RELEASES_URL = f"https://github.com/{GITHUB_OWNER}/{GITHUB_REPO}/releases"
-GITHUB_API_LATEST = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/releases/latest"
-=======
     QScrollArea, QTableView
 )
 
 APP_NAME = "STANK Archive Pro"
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
 SUPPORTED_TEXT = {".txt", ".csv", ".log", ".json", ".xml", ".md", ".py", ".ini"}
 SUPPORTED_IMAGE = {".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp"}
 SUPPORTED_DOC = {".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx"}
@@ -53,33 +33,6 @@ def resource_path(relative_path: str) -> Path:
     return base / relative_path
 
 
-<<<<<<< HEAD
-def normalize_version(version: str) -> tuple[int, ...]:
-    cleaned = version.strip().lower().lstrip("v")
-    parts: list[int] = []
-    for piece in cleaned.replace("-", ".").split("."):
-        number = ""
-        for ch in piece:
-            if ch.isdigit():
-                number += ch
-            else:
-                break
-        if number:
-            parts.append(int(number))
-    return tuple(parts or [0])
-
-
-def is_newer_version(latest: str, current: str) -> bool:
-    left = list(normalize_version(latest))
-    right = list(normalize_version(current))
-    length = max(len(left), len(right))
-    left += [0] * (length - len(left))
-    right += [0] * (length - len(right))
-    return tuple(left) > tuple(right)
-
-
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
 @dataclass
 class ArchiveAction:
     original_path: Path
@@ -401,45 +354,6 @@ class FolderScanTask(QRunnable):
         self.signals.finished.emit(self.token, records, error)
 
 
-<<<<<<< HEAD
-class UpdateCheckSignals(QObject):
-    finished = Signal(bool, str, str, str, str)
-
-
-class UpdateCheckTask(QRunnable):
-    def __init__(self):
-        super().__init__()
-        self.signals = UpdateCheckSignals()
-
-    @Slot()
-    def run(self):
-        try:
-            request = urllib.request.Request(
-                GITHUB_API_LATEST,
-                headers={
-                    "Accept": "application/vnd.github+json",
-                    "User-Agent": "STANK-Archive-Pro",
-                },
-            )
-            with urllib.request.urlopen(request, timeout=10) as response:
-                data = json.loads(response.read().decode("utf-8"))
-            latest_tag = data.get("tag_name", "").strip()
-            latest_name = data.get("name", latest_tag).strip() or latest_tag
-            release_url = data.get("html_url", GITHUB_RELEASES_URL)
-            release_notes = data.get("body", "") or "No release notes provided."
-            has_update = bool(latest_tag) and is_newer_version(latest_tag, CURRENT_VERSION)
-            self.signals.finished.emit(True, latest_tag, latest_name, release_url, release_notes if has_update else "")
-        except urllib.error.HTTPError as exc:
-            if exc.code == 404:
-                self.signals.finished.emit(False, "", "", GITHUB_RELEASES_URL, "No published GitHub release was found yet. Create a release such as v1.0.0, then try again.")
-            else:
-                self.signals.finished.emit(False, "", "", GITHUB_RELEASES_URL, f"GitHub returned HTTP {exc.code}.")
-        except Exception as exc:
-            self.signals.finished.emit(False, "", "", GITHUB_RELEASES_URL, str(exc))
-
-
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
 class DropFrame(QFrame):
     def __init__(self, parent):
         super().__init__(parent)
@@ -523,18 +437,10 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.settings = QSettings("TonyApps", "StankArchivePro")
-<<<<<<< HEAD
-        # Start with no source selected. Users must choose a source folder each session,
-        # so the app never silently scans or prompts before the main window is visible.
-        self.scan_folder: Path | None = None
-        self.archive_folder: Path | None = None
-        self.archive_folder_custom = False
-=======
         saved_scan_folder = self.settings.value("scan_folder", "")
         self.scan_folder = Path(saved_scan_folder) if saved_scan_folder else Path.home()
         self.archive_folder = Path(self.settings.value("archive_folder", str(self.scan_folder / "Archived")))
         self.archive_folder_custom = self.settings.value("archive_folder_custom", "false") == "true"
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
         self.dark_mode = self.settings.value("dark_mode", "false") == "true"
         self.history_log = Path(self.settings.value("history_log", str(Path.home() / "StankArchivePro_history.log")))
         self.last_actions: list[ArchiveAction] = []
@@ -549,10 +455,6 @@ class MainWindow(QMainWindow):
         self._cached_header_logo = None
         self._cached_about_logo = None
         self._about_dialog = None
-<<<<<<< HEAD
-        self.update_check_in_progress = False
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
 
         self.watcher = QFileSystemWatcher(self)
         self.refresh_timer = QTimer(self)
@@ -574,9 +476,6 @@ class MainWindow(QMainWindow):
         self.build_actions()
         self.apply_theme()
         QTimer.singleShot(0, self.preload_about_dialog)
-<<<<<<< HEAD
-        self.show_no_source_selected()
-=======
 
         if not saved_scan_folder or not Path(saved_scan_folder).exists():
             dialog = FolderSetupDialog(self)
@@ -587,7 +486,6 @@ class MainWindow(QMainWindow):
                 QTimer.singleShot(0, self.choose_folder)
         else:
             self.set_scan_folder(self.scan_folder, initial=True)
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
 
     def build_ui(self):
         root = DropFrame(self)
@@ -716,13 +614,7 @@ class MainWindow(QMainWindow):
         self.table.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.setSortingEnabled(True)
-<<<<<<< HEAD
-        self.table.doubleClicked.connect(self.confirm_open_from_index)
-        self.table.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.table.customContextMenuRequested.connect(self.show_file_context_menu)
-=======
         self.table.doubleClicked.connect(self.toggle_check_from_index)
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
         self.table.selectionModel().selectionChanged.connect(lambda *_: self.update_filename_preview())
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
@@ -739,10 +631,6 @@ class MainWindow(QMainWindow):
         self.table.setColumnWidth(3, 90)
         self.table.setColumnWidth(4, 90)
         self.table.setWordWrap(False)
-<<<<<<< HEAD
-        self.table.setToolTip("Double-click a file to open it after confirmation. Right-click a file for quick actions including Archive.")
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
         self.table.verticalHeader().setDefaultSectionSize(36)
         self.proxy.sort(2, Qt.DescendingOrder)
         self.model.dataChanged.connect(lambda *_: self.after_model_check_changed())
@@ -903,108 +791,21 @@ class MainWindow(QMainWindow):
         self.settings.setValue("dark_mode", "true" if self.dark_mode else "false")
         self.apply_theme()
 
-<<<<<<< HEAD
-    def show_no_source_selected(self):
-        self.scan_folder = None
-        self.archive_folder = None
-        self.all_files = []
-        self.model.set_records([])
-        watched = self.watcher.directories()
-        if watched:
-            self.watcher.removePaths(watched)
-        self.source_path_label.setText("No source folder selected")
-        self.archive_path_label.setText("Choose a source folder first")
-        self.status_label.setText("Choose a source folder to begin.")
-        self.archive_button.setText("Archive Selected")
-        self.update_dashboard()
-        self.update_filename_preview()
-
-    def choose_folder(self):
-        start_folder = str(self.scan_folder) if self.scan_folder else str(Path.home())
-        folder = QFileDialog.getExistingDirectory(self, "Choose folder to scan", start_folder)
-=======
     def choose_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "Choose folder to scan", str(self.scan_folder))
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
         if folder:
             self.set_scan_folder(Path(folder))
 
     def choose_archive_folder(self):
-<<<<<<< HEAD
-        start_folder = str(self.archive_folder) if self.archive_folder else (str(self.scan_folder / "Archived") if self.scan_folder else str(Path.home()))
-        folder = QFileDialog.getExistingDirectory(self, "Choose archive folder", start_folder)
-        if folder:
-            chosen = Path(folder)
-            if not self.ensure_archive_folder_exists(chosen):
-                return
-            self.archive_folder = chosen
-=======
         folder = QFileDialog.getExistingDirectory(self, "Choose archive folder", str(self.archive_folder))
         if folder:
             self.archive_folder = Path(folder)
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
             self.archive_folder_custom = True
             self.settings.setValue("archive_folder_custom", "true")
             self.settings.setValue("archive_folder", str(self.archive_folder))
             self.archive_path_label.setText(str(self.archive_folder))
             self.update_filename_preview()
 
-<<<<<<< HEAD
-    def ensure_archive_folder_exists(self, folder: Path | None, ask: bool = True) -> bool:
-        if folder is None:
-            return False
-        if folder.exists():
-            return True
-        if ask:
-            answer = QMessageBox.question(
-                self,
-                "Create archive folder?",
-                f"The archive folder does not exist yet:\n\n{folder}\n\nDo you want to create it now?",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.Yes,
-            )
-            if answer != QMessageBox.Yes:
-                return False
-        try:
-            folder.mkdir(parents=True, exist_ok=True)
-            return True
-        except Exception as exc:
-            QMessageBox.critical(self, "Could not create archive folder", str(exc))
-            return False
-
-    def set_scan_folder(self, folder: Path, initial=False):
-        self.scan_folder = folder
-
-        # Every selected source folder uses its own local Archived folder.
-        # If it exists, use it automatically. If not, ask the user after the app is open.
-        default_archive = folder / "Archived"
-        self.archive_folder_custom = False
-        self.settings.setValue("archive_folder_custom", "false")
-        if default_archive.exists():
-            self.archive_folder = default_archive
-            self.settings.setValue("archive_folder", str(self.archive_folder))
-            self.archive_path_label.setText(str(self.archive_folder))
-        else:
-            answer = QMessageBox.question(
-                self,
-                "Create Archived folder?",
-                f"Create an Archived folder inside this source folder?\n\n{default_archive}\n\nArchived copies will be saved there.",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.Yes,
-            )
-            if answer == QMessageBox.Yes and self.ensure_archive_folder_exists(default_archive, ask=False):
-                self.archive_folder = default_archive
-                self.settings.setValue("archive_folder", str(self.archive_folder))
-                self.archive_path_label.setText(str(self.archive_folder))
-            else:
-                self.archive_folder = None
-                self.settings.remove("archive_folder")
-                self.archive_path_label.setText("No archive folder selected")
-                self.status_label.setText("Source selected. Choose an archive folder before archiving.")
-
-        self.settings.setValue("scan_folder", str(folder))
-        self.source_path_label.setText(str(folder))
-=======
     def set_scan_folder(self, folder: Path, initial=False):
         self.scan_folder = folder
         if not self.archive_folder_custom:
@@ -1013,7 +814,6 @@ class MainWindow(QMainWindow):
         self.settings.setValue("scan_folder", str(folder))
         self.source_path_label.setText(str(folder))
         self.archive_path_label.setText(str(self.archive_folder))
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
         watched = self.watcher.directories()
         if watched:
             self.watcher.removePaths(watched)
@@ -1022,16 +822,6 @@ class MainWindow(QMainWindow):
         self.refresh_files()
 
     def refresh_files(self):
-<<<<<<< HEAD
-        if self.scan_folder is None:
-            self.all_files = []
-            self.model.set_records([])
-            self.status_label.setText("Choose a source folder to begin.")
-            self.update_dashboard()
-            self.update_filename_preview()
-            return
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
         if not self.scan_folder.exists():
             self.all_files = []
             self.model.set_records([])
@@ -1078,35 +868,6 @@ class MainWindow(QMainWindow):
                 paths.append(p)
         return paths
 
-<<<<<<< HEAD
-    def path_from_proxy_index(self, proxy_index) -> Path | None:
-        if not proxy_index.isValid():
-            return None
-        source_index = self.proxy.mapToSource(proxy_index)
-        return self.model.path_at(source_index.row())
-
-    def selected_row_paths(self) -> list[Path]:
-        paths: list[Path] = []
-        seen: set[str] = set()
-        selection_model = self.table.selectionModel()
-        if not selection_model:
-            return paths
-        for proxy_index in selection_model.selectedRows():
-            path = self.path_from_proxy_index(proxy_index)
-            if path and str(path) not in seen:
-                paths.append(path)
-                seen.add(str(path))
-        return paths
-
-    def context_target_paths(self, proxy_index) -> list[Path]:
-        clicked_path = self.path_from_proxy_index(proxy_index)
-        selected_paths = self.selected_row_paths()
-        if clicked_path and any(str(clicked_path) == str(p) for p in selected_paths):
-            return selected_paths
-        return [clicked_path] if clicked_path else []
-
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
     def selected_paths(self) -> list[Path]:
         return self.model.checked_existing_paths()
 
@@ -1142,84 +903,6 @@ class MainWindow(QMainWindow):
         if idx.isValid():
             self.toggle_check_from_index(idx)
 
-<<<<<<< HEAD
-    def confirm_open_from_index(self, proxy_index):
-        path = self.path_from_proxy_index(proxy_index)
-        if path:
-            self.confirm_open_file(path)
-
-    def confirm_open_file(self, path: Path):
-        if not path.exists():
-            QMessageBox.warning(self, "File not found", f"This file no longer exists:\n\n{path}")
-            self.refresh_files()
-            return
-        answer = QMessageBox.question(
-            self,
-            "Open File?",
-            f"Open this file with its default Windows application?\n\n{path.name}",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No,
-        )
-        if answer == QMessageBox.Yes:
-            self.open_path(path)
-
-    def show_file_context_menu(self, position):
-        proxy_index = self.table.indexAt(position)
-        if not proxy_index.isValid():
-            return
-        paths = self.context_target_paths(proxy_index)
-        if not paths:
-            return
-        clicked_path = self.path_from_proxy_index(proxy_index)
-
-        menu = QMenu(self)
-        archive_text = "📦 Archive This File" if len(paths) == 1 else f"📦 Archive {len(paths)} Selected Files"
-        archive_action = menu.addAction(archive_text)
-        menu.addSeparator()
-        open_action = menu.addAction("📂 Open File...")
-        copy_action = menu.addAction("📋 Copy Filename")
-        show_action = menu.addAction("📁 Show in Explorer")
-
-        chosen = menu.exec(self.table.viewport().mapToGlobal(position))
-        if chosen == archive_action:
-            self.archive_paths(paths)
-        elif chosen == open_action and clicked_path:
-            self.confirm_open_file(clicked_path)
-        elif chosen == copy_action and clicked_path:
-            QApplication.clipboard().setText(clicked_path.name)
-            self.status_label.setText(f"Copied filename: {clicked_path.name}")
-        elif chosen == show_action and clicked_path:
-            self.show_in_explorer(clicked_path)
-
-    def show_in_explorer(self, path: Path):
-        try:
-            if sys.platform.startswith("win"):
-                subprocess.Popen(["explorer", "/select,", str(path)])
-            else:
-                self.open_path(path.parent)
-        except Exception as exc:
-            QMessageBox.critical(self, "Show in Explorer failed", str(exc))
-
-    def show_file_properties(self, path: Path):
-        try:
-            stat = path.stat()
-            created = datetime.fromtimestamp(stat.st_ctime).strftime("%m-%d-%Y %I:%M %p")
-            modified = datetime.fromtimestamp(stat.st_mtime).strftime("%m-%d-%Y %I:%M %p")
-            QMessageBox.information(
-                self,
-                "File Properties",
-                f"Name: {path.name}\n"
-                f"Type: {path.suffix.lower().replace('.', '') or 'file'}\n"
-                f"Size: {FileTableModel.human_size(stat.st_size)}\n"
-                f"Created: {created}\n"
-                f"Modified: {modified}\n\n"
-                f"Path:\n{path}",
-            )
-        except Exception as exc:
-            QMessageBox.critical(self, "Properties failed", str(exc))
-
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
     def after_model_check_changed(self):
         count = len(self.selected_paths())
         self.archive_button.setText(f"Archive {count} File{'s' if count != 1 else ''}" if count else "Archive Selected")
@@ -1260,11 +943,6 @@ class MainWindow(QMainWindow):
         return f"{path.stem} (Archived {stamp}){path.suffix}"
 
     def unique_destination(self, path: Path) -> Path:
-<<<<<<< HEAD
-        if self.archive_folder is None:
-            raise RuntimeError("No archive folder selected.")
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
         base = self.archive_folder / self.archive_name(path)
         if not base.exists():
             return base
@@ -1278,11 +956,6 @@ class MainWindow(QMainWindow):
             counter += 1
 
     def archived_filename_for_preview(self, path: Path) -> str:
-<<<<<<< HEAD
-        if self.archive_folder is None:
-            return self.archive_name(path)
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
         return self.unique_destination(path).name
 
     def archive_selected(self):
@@ -1290,31 +963,6 @@ class MainWindow(QMainWindow):
         if not paths:
             self.status_label.setText("Select one or more files first.")
             return
-<<<<<<< HEAD
-        self.archive_paths(paths)
-
-    def archive_paths(self, paths: list[Path]):
-        paths = [p for p in paths if p and p.exists()]
-        if not paths:
-            self.status_label.setText("No available files to archive.")
-            return
-        if self.archive_folder is None:
-            self.status_label.setText("Choose an archive folder before archiving.")
-            self.choose_archive_folder()
-            if self.archive_folder is None:
-                return
-        try:
-            if not self.ensure_archive_folder_exists(self.archive_folder):
-                self.status_label.setText("Archive cancelled. No archive folder was created.")
-                return
-            actions = []
-            total = len(paths)
-            for index, path in enumerate(paths, start=1):
-                dest = self.unique_destination(path)
-                self.filename_preview.setPlainText(f"Archiving...\n\n📄 {dest.name}\n\n{index} / {total}")
-                QApplication.processEvents()
-                shutil.copy2(str(path), str(dest))
-=======
         try:
             self.archive_folder.mkdir(parents=True, exist_ok=True)
             actions = []
@@ -1330,7 +978,6 @@ class MainWindow(QMainWindow):
                 )
                 QApplication.processEvents()
                 shutil.move(str(path), str(dest))
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
                 actions.append(ArchiveAction(path, dest))
                 self.write_history(path, dest)
             self.last_actions = actions
@@ -1341,19 +988,6 @@ class MainWindow(QMainWindow):
 
     def show_success_banner(self, count: int):
         if count <= 0:
-<<<<<<< HEAD
-            self.status_label.setText("No archived copies were created.")
-            return
-        word = "file" if count == 1 else "files"
-        self.show_dashboard_message(f"✓ Created {count} archived {word}.", "Original files were left in place and renamed copies were saved to the archive folder.")
-
-    def show_undo_banner(self, count: int):
-        if count <= 0:
-            self.status_label.setText("No archived copies were removed.")
-            return
-        word = "file" if count == 1 else "files"
-        self.show_dashboard_message(f"↶ Undo complete. Removed {count} archived {word}.", "Original files were not changed.")
-=======
             self.status_label.setText("No files were archived.")
             return
         word = "file" if count == 1 else "files"
@@ -1365,7 +999,6 @@ class MainWindow(QMainWindow):
             return
         word = "file" if count == 1 else "files"
         self.show_dashboard_message(f"↶ Undo complete. Restored {count} {word}.", "Files were moved back to the source folder.")
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
 
     def show_dashboard_message(self, headline: str, detail: str):
         self.status_label.setText(headline)
@@ -1383,13 +1016,9 @@ class MainWindow(QMainWindow):
                 original, archived = action.original_path, action.archived_path
                 if not archived.exists():
                     continue
-<<<<<<< HEAD
-                archived.unlink()
-=======
                 if original.exists():
                     original = original.with_name(f"{original.stem}_restored_{datetime.now().strftime('%H-%M')}{original.suffix}")
                 shutil.move(str(archived), str(original))
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
                 restored += 1
             self.show_undo_banner(restored)
             self.last_actions = []
@@ -1399,15 +1028,7 @@ class MainWindow(QMainWindow):
 
     def open_archive_folder(self):
         try:
-<<<<<<< HEAD
-            if self.archive_folder is None:
-                self.status_label.setText("No archive folder selected.")
-                return
-            if not self.ensure_archive_folder_exists(self.archive_folder):
-                return
-=======
             self.archive_folder.mkdir(parents=True, exist_ok=True)
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
             self.open_path(self.archive_folder)
         except Exception as exc:
             QMessageBox.critical(self, "Open archive folder failed", str(exc))
@@ -1475,19 +1096,11 @@ class MainWindow(QMainWindow):
         content_layout.setContentsMargins(0, 0, 8, 0)
         content_layout.setSpacing(10)
         for widget in [
-<<<<<<< HEAD
-            self.about_label(f"Version {CURRENT_VERSION}", "AboutBody"),
-            self.about_label("Welcome", "AboutSectionTitle"),
-            self.about_label("STANK Archive Pro was created to make document archiving fast, simple, and reliable. Whether you're organizing scanned paperwork, invoices, insurance documents, or other digital files, STANK helps keep your workspace clean by creating renamed archive copies while leaving the original files in place.<br><br>Version 1.0.0 creates renamed archive copies, keeps originals in place, and includes update checking through GitHub Releases.", "AboutBody"),
-            self.about_label("What STANK Means", "AboutSectionTitle"),
-            self.about_label("<b>S</b> — <b>Secure</b><br>Protect your documents with reliable organization and safe archiving.<br><br><b>T</b> — <b>Tracking</b><br>Keep files organized with consistent archive naming and structure.<br><br><b>A</b> — <b>Archiving</b><br>Quickly create timestamped archive copies in your chosen archive location.<br><br><b>N</b> — <b>Naming</b><br>Automatically rename every archived file using a standardized format.<br><br><b>K</b> — <b>Kit</b><br>Everything you need for fast, professional document archiving.", "AboutBody"),
-=======
             self.about_label("Version 3.1", "AboutBody"),
             self.about_label("Welcome", "AboutSectionTitle"),
             self.about_label("STANK Archive Pro was created to make document archiving fast, simple, and reliable. Whether you're organizing scanned paperwork, invoices, insurance documents, or other digital files, STANK helps keep your workspace clean by automatically renaming and moving files into a structured archive.<br><br>Version 3.1 uses a faster file-list engine, smoother resize handling, and preloaded dialogs for a more responsive experience.", "AboutBody"),
             self.about_label("What STANK Means", "AboutSectionTitle"),
             self.about_label("<b>S</b> — <b>Secure</b><br>Protect your documents with reliable organization and safe archiving.<br><br><b>T</b> — <b>Tracking</b><br>Keep files organized with consistent archive naming and structure.<br><br><b>A</b> — <b>Archiving</b><br>Quickly move documents into their permanent archive location.<br><br><b>N</b> — <b>Naming</b><br>Automatically rename every archived file using a standardized format.<br><br><b>K</b> — <b>Kit</b><br>Everything you need for fast, professional document archiving.", "AboutBody"),
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
             self.about_label("Features", "AboutSectionTitle"),
             self.about_label("• Archive one or many files at once<br>• Fast model-based file list<br>• Automatic archive renaming<br>• Consistent Windows-friendly filenames<br>• Batch processing<br>• Fast file searching and sorting<br>• Light and dark modes<br>• Optimized for everyday document management", "AboutBody"),
         ]:
@@ -1496,24 +1109,10 @@ class MainWindow(QMainWindow):
         scroll.setWidget(content)
         outer.addWidget(scroll, 1)
 
-<<<<<<< HEAD
-        button_row = QHBoxLayout()
-        self.about_update_button = QPushButton("Check for Updates")
-        self.about_update_button.setObjectName("SecondaryButton")
-        self.about_update_button.clicked.connect(self.check_for_updates)
-        close_button = QPushButton("Close")
-        close_button.setObjectName("PrimaryButton")
-        close_button.clicked.connect(dialog.accept)
-        button_row.addWidget(self.about_update_button, 0, Qt.AlignLeft)
-        button_row.addStretch(1)
-        button_row.addWidget(close_button, 0, Qt.AlignRight)
-        outer.addLayout(button_row)
-=======
         close_button = QPushButton("Close")
         close_button.setObjectName("PrimaryButton")
         close_button.clicked.connect(dialog.accept)
         outer.addWidget(close_button, 0, Qt.AlignRight)
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
         return dialog
 
     def show_about_dialog(self):
@@ -1536,11 +1135,6 @@ class MainWindow(QMainWindow):
             QLabel#AboutBody { font-size: 13px; line-height: 1.35; color: #d3deec; background: transparent; }
             QPushButton#PrimaryButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 #35c978, stop:1 #158d45); color: white; border: 1px solid #0e7438; border-radius: 13px; padding: 8px 18px; font-family: "Segoe UI Semibold"; font-weight: 950; font-size: 14px; min-width: 120px; }
             QPushButton#PrimaryButton:hover { background: #24a85a; }
-<<<<<<< HEAD
-            QPushButton#SecondaryButton { background: #26364f; color: #eef6ff; border: 1px solid #405772; border-radius: 13px; padding: 8px 18px; font-family: "Segoe UI Semibold"; font-weight: 900; font-size: 14px; min-width: 150px; }
-            QPushButton#SecondaryButton:hover { background: #314764; }
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
             QScrollBar:vertical { background: #172033; width: 13px; border-radius: 6px; }
             QScrollBar::handle:vertical { background: #53677e; border-radius: 6px; min-height: 40px; }
             """
@@ -1554,73 +1148,10 @@ class MainWindow(QMainWindow):
             QLabel#AboutBody { font-size: 13px; line-height: 1.35; color: #203247; background: transparent; }
             QPushButton#PrimaryButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 #35c978, stop:1 #158d45); color: white; border: 1px solid #0e7438; border-radius: 13px; padding: 8px 18px; font-family: "Segoe UI Semibold"; font-weight: 950; font-size: 14px; min-width: 120px; }
             QPushButton#PrimaryButton:hover { background: #24a85a; }
-<<<<<<< HEAD
-            QPushButton#SecondaryButton { background: #eaf2fb; color: #0f1f33; border: 1px solid #bed0e4; border-radius: 13px; padding: 8px 18px; font-family: "Segoe UI Semibold"; font-weight: 900; font-size: 14px; min-width: 150px; }
-            QPushButton#SecondaryButton:hover { background: #dceafe; }
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
             QScrollBar:vertical { background: #edf3f8; width: 13px; border-radius: 6px; }
             QScrollBar::handle:vertical { background: #b7c8d8; border-radius: 6px; min-height: 40px; }
             """
 
-<<<<<<< HEAD
-    def check_for_updates(self):
-        if self.update_check_in_progress:
-            return
-        self.update_check_in_progress = True
-        if hasattr(self, "about_update_button"):
-            self.about_update_button.setEnabled(False)
-            self.about_update_button.setText("Checking...")
-        self.status_label.setText("Checking GitHub for updates...")
-        task = UpdateCheckTask()
-        task.signals.finished.connect(self.on_update_check_finished)
-        self.thread_pool.start(task)
-
-    def on_update_check_finished(self, ok: bool, latest_tag: str, latest_name: str, release_url: str, notes: str):
-        self.update_check_in_progress = False
-        if hasattr(self, "about_update_button"):
-            self.about_update_button.setEnabled(True)
-            self.about_update_button.setText("Check for Updates")
-        if not ok:
-            self.status_label.setText("Update check could not be completed.")
-            QMessageBox.warning(
-                self,
-                "Update Check Failed",
-                f"STANK Archive Pro could not check for updates.\n\n{notes}",
-            )
-            return
-        latest_display = latest_tag or latest_name or "Unknown"
-        if latest_tag and is_newer_version(latest_tag, CURRENT_VERSION):
-            self.status_label.setText(f"Update available: {latest_display}")
-            preview_notes = notes.strip()
-            if len(preview_notes) > 900:
-                preview_notes = preview_notes[:900].rstrip() + "..."
-            message = (
-                f"A newer version of STANK Archive Pro is available.\n\n"
-                f"Current version: v{CURRENT_VERSION}\n"
-                f"Latest version: {latest_display}\n\n"
-                f"Release notes:\n{preview_notes}\n\n"
-                f"Open the GitHub release page to download it?"
-            )
-            answer = QMessageBox.question(
-                self,
-                "Update Available",
-                message,
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.Yes,
-            )
-            if answer == QMessageBox.Yes:
-                QDesktopServices.openUrl(QUrl(release_url or GITHUB_RELEASES_URL))
-        else:
-            self.status_label.setText("STANK Archive Pro is up to date.")
-            QMessageBox.information(
-                self,
-                "No Updates Found",
-                f"You are running the latest version.\n\nCurrent version: v{CURRENT_VERSION}\nLatest GitHub release: {latest_display}",
-            )
-
-=======
->>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
     def about_label(self, text: str, object_name: str) -> QLabel:
         label = QLabel(text)
         label.setWordWrap(True)

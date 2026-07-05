@@ -1,10 +1,17 @@
 __pycache__/
 build/
 dist/
+<<<<<<< HEAD
 release/
+=======
+>>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a
 *.pyc
 *.pyo
 *.spec
 .vscode/
+<<<<<<< HEAD
 .idea/
 .DS_Store
+=======
+.idea/
+>>>>>>> a350b77976b05ea830a47a08a12f47ef8443fe7a

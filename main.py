@@ -387,7 +387,7 @@ class FolderScanTask(QRunnable):
 
 
 class UpdateCheckSignals(QObject):
-    finished = Signal(bool, str, str, str, str)
+    finished = Signal(bool, str, str, str, str, str, str)
 
 
 class UpdateCheckTask(QRunnable):
@@ -411,15 +411,72 @@ class UpdateCheckTask(QRunnable):
             latest_name = data.get("name", latest_tag).strip() or latest_tag
             release_url = data.get("html_url", GITHUB_RELEASES_URL)
             release_notes = data.get("body", "") or "No release notes provided."
+            download_url = ""
+            asset_name = ""
+            assets = data.get("assets", []) or []
+            preferred_assets = []
+            for asset in assets:
+                name = (asset.get("name") or "").strip()
+                url = (asset.get("browser_download_url") or "").strip()
+                lower = name.lower()
+                if not name or not url:
+                    continue
+                if lower.endswith(".exe") and ("setup" in lower or "installer" in lower):
+                    preferred_assets.insert(0, (name, url))
+                elif lower.endswith(".zip") and ("portable" in lower or "stank" in lower):
+                    preferred_assets.append((name, url))
+                elif lower.endswith((".zip", ".exe")):
+                    preferred_assets.append((name, url))
+            if preferred_assets:
+                asset_name, download_url = preferred_assets[0]
             has_update = bool(latest_tag) and is_newer_version(latest_tag, CURRENT_VERSION)
-            self.signals.finished.emit(True, latest_tag, latest_name, release_url, release_notes if has_update else "")
+            self.signals.finished.emit(True, latest_tag, latest_name, release_url, release_notes if has_update else "", download_url, asset_name)
         except urllib.error.HTTPError as exc:
             if exc.code == 404:
-                self.signals.finished.emit(False, "", "", GITHUB_RELEASES_URL, "No published GitHub release was found yet. Create a release such as v1.0.0, then try again.")
+                self.signals.finished.emit(False, "", "", GITHUB_RELEASES_URL, "No published GitHub release was found yet. Create a release such as v1.0.0, then try again.", "", "")
             else:
-                self.signals.finished.emit(False, "", "", GITHUB_RELEASES_URL, f"GitHub returned HTTP {exc.code}.")
+                self.signals.finished.emit(False, "", "", GITHUB_RELEASES_URL, f"GitHub returned HTTP {exc.code}.", "", "")
         except Exception as exc:
-            self.signals.finished.emit(False, "", "", GITHUB_RELEASES_URL, str(exc))
+            self.signals.finished.emit(False, "", "", GITHUB_RELEASES_URL, str(exc), "", "")
+
+
+class UpdateDownloadSignals(QObject):
+    finished = Signal(bool, str, str)
+
+
+class UpdateDownloadTask(QRunnable):
+    def __init__(self, download_url: str, asset_name: str):
+        super().__init__()
+        self.download_url = download_url
+        self.asset_name = asset_name or "STANK_Archive_Pro_Update.zip"
+        self.signals = UpdateDownloadSignals()
+
+    @Slot()
+    def run(self):
+        try:
+            downloads = Path.home() / "Downloads"
+            if not downloads.exists():
+                downloads = Path.home()
+            target_dir = downloads / "STANK Archive Pro Updates"
+            target_dir.mkdir(parents=True, exist_ok=True)
+            safe_name = "".join(ch for ch in self.asset_name if ch not in '<>:"/\\|?*').strip() or "STANK_Archive_Pro_Update.zip"
+            target = target_dir / safe_name
+            if target.exists():
+                stem = target.stem
+                suffix = target.suffix
+                counter = 2
+                while target.exists():
+                    target = target_dir / f"{stem} ({counter}){suffix}"
+                    counter += 1
+            request = urllib.request.Request(
+                self.download_url,
+                headers={"User-Agent": "STANK-Archive-Pro"},
+            )
+            with urllib.request.urlopen(request, timeout=60) as response, open(target, "wb") as out_file:
+                shutil.copyfileobj(response, out_file)
+            self.signals.finished.emit(True, str(target), "")
+        except Exception as exc:
+            self.signals.finished.emit(False, "", str(exc))
 
 
 class DropFrame(QFrame):
@@ -802,6 +859,12 @@ class MainWindow(QMainWindow):
             QPushButton#UndoButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 #ef4444, stop:1 #991b1b); color: #ffffff; border: 1px solid #7f1d1d; }
             QPushButton#UndoButton:pressed { background: #7f1d1d; color: #ffffff; border: 1px solid #641313; }
             QPushButton#HeaderButton { background: #18243a; color: #dcecff; border: 1px solid #3e5f84; min-width: 86px; }
+
+            QMessageBox { background: #151f2e; color: #eef6ff; }
+            QMessageBox QLabel { background: transparent; color: #eef6ff; font-size: 13px; font-weight: 650; }
+            QMessageBox QPushButton { background: #24364f; color: #eef6ff; border: 1px solid #4b6f95; border-radius: 10px; padding: 7px 18px; min-width: 82px; font-family: "Segoe UI Semibold"; font-weight: 900; }
+            QMessageBox QPushButton:hover { background: #2f4a70; border: 1px solid #63adff; }
+            QMessageBox QPushButton:pressed { background: #1b2a40; }
             QLabel#AboutTitle { font-size: 24px; font-weight: 950; color: #f3f8ff; }
             QLabel#AboutTagline { font-size: 14px; font-weight: 850; color: #63adff; }
             QLabel#AboutSectionTitle { font-size: 16px; font-weight: 950; color: #f3f8ff; margin-top: 8px; }
@@ -842,6 +905,12 @@ class MainWindow(QMainWindow):
             QPushButton#UndoButton:hover { background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 #ef5350, stop:1 #c62828); color: #ffffff; border: 1px solid #a81919; }
             QPushButton#UndoButton:pressed { background: #b71c1c; color: #ffffff; border: 1px solid #8b1111; }
             QPushButton#HeaderButton { background: #f2f7fd; color: #174e8f; border: 1px solid #b8d0ec; min-width: 86px; }
+
+            QMessageBox { background: #ffffff; color: #0f1f33; }
+            QMessageBox QLabel { background: transparent; color: #0f1f33; font-size: 13px; font-weight: 650; }
+            QMessageBox QPushButton { background: #f2f7fd; color: #174e8f; border: 1px solid #b8d0ec; border-radius: 10px; padding: 7px 18px; min-width: 82px; font-family: "Segoe UI Semibold"; font-weight: 900; }
+            QMessageBox QPushButton:hover { background: #e5f1ff; border: 1px solid #176fe0; }
+            QMessageBox QPushButton:pressed { background: #d6e8fb; }
             QLabel#AboutTitle { font-size: 24px; font-weight: 950; color: #0f1f33; }
             QLabel#AboutTagline { font-size: 14px; font-weight: 850; color: #176fe0; }
             QLabel#AboutSectionTitle { font-size: 16px; font-weight: 950; color: #0f1f33; margin-top: 8px; }
@@ -1427,7 +1496,7 @@ class MainWindow(QMainWindow):
         task.signals.finished.connect(self.on_update_check_finished)
         self.thread_pool.start(task)
 
-    def on_update_check_finished(self, ok: bool, latest_tag: str, latest_name: str, release_url: str, notes: str):
+    def on_update_check_finished(self, ok: bool, latest_tag: str, latest_name: str, release_url: str, notes: str, download_url: str, asset_name: str):
         self.update_check_in_progress = False
         if hasattr(self, "about_update_button"):
             self.about_update_button.setEnabled(True)
@@ -1446,12 +1515,16 @@ class MainWindow(QMainWindow):
             preview_notes = notes.strip()
             if len(preview_notes) > 900:
                 preview_notes = preview_notes[:900].rstrip() + "..."
+            if download_url:
+                action_text = f"Download and open this update now?\n\nAsset: {asset_name}"
+            else:
+                action_text = "No downloadable release asset was found. Open the GitHub release page instead?"
             message = (
                 f"A newer version of STANK Archive Pro is available.\n\n"
                 f"Current version: v{CURRENT_VERSION}\n"
                 f"Latest version: {latest_display}\n\n"
                 f"Release notes:\n{preview_notes}\n\n"
-                f"Open the GitHub release page to download it?"
+                f"{action_text}"
             )
             answer = QMessageBox.question(
                 self,
@@ -1461,7 +1534,10 @@ class MainWindow(QMainWindow):
                 QMessageBox.Yes,
             )
             if answer == QMessageBox.Yes:
-                QDesktopServices.openUrl(QUrl(release_url or GITHUB_RELEASES_URL))
+                if download_url:
+                    self.download_update(download_url, asset_name)
+                else:
+                    QDesktopServices.openUrl(QUrl(release_url or GITHUB_RELEASES_URL))
         else:
             self.status_label.setText("STANK Archive Pro is up to date.")
             QMessageBox.information(
@@ -1469,6 +1545,51 @@ class MainWindow(QMainWindow):
                 "No Updates Found",
                 f"You are running the latest version.\n\nCurrent version: v{CURRENT_VERSION}\nLatest GitHub release: {latest_display}",
             )
+
+    def download_update(self, download_url: str, asset_name: str):
+        if not download_url:
+            QDesktopServices.openUrl(QUrl(GITHUB_RELEASES_URL))
+            return
+        if hasattr(self, "about_update_button"):
+            self.about_update_button.setEnabled(False)
+            self.about_update_button.setText("Downloading...")
+        self.status_label.setText("Downloading update...")
+        task = UpdateDownloadTask(download_url, asset_name)
+        task.signals.finished.connect(self.on_update_download_finished)
+        self.thread_pool.start(task)
+
+    def on_update_download_finished(self, ok: bool, downloaded_path: str, error: str):
+        if hasattr(self, "about_update_button"):
+            self.about_update_button.setEnabled(True)
+            self.about_update_button.setText("Check for Updates")
+        if not ok:
+            self.status_label.setText("Update download failed.")
+            QMessageBox.warning(
+                self,
+                "Update Download Failed",
+                f"STANK Archive Pro could not download the update.\n\n{error}",
+            )
+            return
+        path = Path(downloaded_path)
+        self.status_label.setText(f"Update downloaded: {path.name}")
+        lower = path.name.lower()
+        if lower.endswith(".exe"):
+            answer = QMessageBox.question(
+                self,
+                "Update Downloaded",
+                f"The update was downloaded successfully.\n\n{path}\n\nOpen the installer now?\n\nSTANK Archive Pro may need to be closed before installation completes.",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes,
+            )
+            if answer == QMessageBox.Yes:
+                self.open_path(path)
+        else:
+            QMessageBox.information(
+                self,
+                "Update Downloaded",
+                f"The update ZIP was downloaded successfully.\n\n{path}\n\nThe ZIP will open now. Close STANK Archive Pro, extract the new ZIP, and replace the old app folder.",
+            )
+            self.open_path(path)
 
     def about_label(self, text: str, object_name: str) -> QLabel:
         label = QLabel(text)

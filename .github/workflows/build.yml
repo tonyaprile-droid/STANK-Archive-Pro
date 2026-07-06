@@ -1,42 +1,52 @@
-name: Build and Release STANK Archive Pro
+name: Build STANK Archive Pro
 
 on:
   push:
-    tags:
-      - "v*"
+    branches: [main]
   workflow_dispatch:
+  release:
+    types: [published]
 
 permissions:
   contents: write
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pyinstaller pillow
+          python -m pip install -r requirements.txt
+          python -m pip install pyinstaller pillow
 
-      - name: Build EXE
+      - name: Build portable app
         run: |
-          python -m PyInstaller --clean --noconfirm --windowed --name "STANK Archive Pro" main.py
+          python -m PyInstaller --clean --noconfirm --windowed --name "STANK Archive Pro" --icon "assets\app_icon.ico" --add-data "assets;assets" main.py
 
-      - name: Create Portable ZIP
+      - name: Package portable ZIP
         shell: powershell
         run: |
-          Compress-Archive -Path "dist\STANK Archive Pro\*" -DestinationPath "STANK_Archive_Pro_Portable.zip"
+          New-Item -ItemType Directory -Force -Path release | Out-Null
+          Compress-Archive -Path "dist\STANK Archive Pro\*" -DestinationPath "release\STANK_Archive_Pro_v1.0.0_Portable.zip" -Force
 
-      - name: Publish Release
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: STANK-Archive-Pro-v1.0.0-Portable
+          path: release/STANK_Archive_Pro_v1.0.0_Portable.zip
+
+      - name: Attach ZIP to GitHub Release
+        if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
-          files: STANK_Archive_Pro_Portable.zip
-          generate_release_notes: true
+          files: release/STANK_Archive_Pro_v1.0.0_Portable.zip
